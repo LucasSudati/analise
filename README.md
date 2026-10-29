@@ -31,3 +31,13 @@ tomados como justificativa dos métodos: eles marcam justamente os pontos em que
 - quais resultados podem ser mostrados como observação, estimativa, tendência ou apenas heurística experimental.
 
 A prioridade é identificar onde o método precisa de calibração, validação com casos reais ou mudança de abordagem.
+
+---
+
+### Status e atualização do projeto
+
+- **Situação:** Em revisão técnica; métodos meteorológicos ainda exigem validação.
+- **Última revisão desta nota:** 29/10/2026.
+- **Última alteração do código:** não verificada nesta revisão; consulte o histórico de commits para a data exata.
+
+> Esta nota registra a revisão da documentação, não certifica testes nem uma versão estável.
