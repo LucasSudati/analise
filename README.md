@@ -71,7 +71,21 @@ A média de refletividade estimada dos pixels de uma região é:
 \overline{Z}_{\mathrm{dBZ}}=\frac{1}{N}\sum_{i=1}^{N}\widehat Z_i.
 ```
 
-**Atenção:** essa é uma média aritmética de valores em dBZ, não uma média física de refletividade linear. A conversão física usual seria `Z_i=10^(dBZ_i/10)`, seguida de média no domínio linear e reconversão por `10 log10`.
+**Atenção:** a equação anterior representa a média aritmética dos valores estimados em dBZ, como implementado no código. Como dBZ é uma escala logarítmica, essa média não equivale à média física da refletividade. Para obter a média física, primeiro convertem-se os valores para a escala linear e, depois, retorna-se a dBZ:
+
+```math
+Z_i = 10^{\mathrm{dBZ}_i/10}
+```
+
+```math
+\overline{Z} = \frac{1}{N}\sum_{i=1}^{N} Z_i
+```
+
+```math
+\mathrm{dBZ}_{\mathrm{medio}} = 10\log_{10}(\overline{Z})
+```
+
+Aqui, `Z_i` representa a refletividade linear (em mm⁶/m³), `N` é a quantidade de pixels e `dBZ_medio` é o resultado convertido novamente para a escala logarítmica. **Essas três equações descrevem uma alternativa fisicamente adequada para a média, mas não são o cálculo atualmente implementado na função.**
 
 Para distância entre centros geográficos, o código usa a fórmula de Haversine:
 
