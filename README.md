@@ -91,7 +91,7 @@ Z_i = 10^{\mathrm{dBZ}_i/10}
 
 Aqui, `Z_i` representa o fator de refletividade linear (em mm⁶/m³), `N` é a quantidade de pixels e `dBZ_medio` é o resultado convertido novamente para a escala logarítmica, usando a referência convencional de 1 mm⁶/m³. **Essas três equações descrevem uma alternativa fisicamente adequada para a média, mas não são o cálculo atualmente implementado na função.**
 
-Para distância entre centros geográficos, o código usa a fórmula de Haversine, apresentada em duas etapas. Os blocos abaixo usam LaTeX básico, compatível com a sintaxe matemática do GitHub.
+Para distância entre centros geográficos, o código usa a fórmula de Haversine, apresentada em duas etapas.
 
 **Etapa 1 — calcular o parâmetro a:**
 
