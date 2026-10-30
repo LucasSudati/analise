@@ -91,21 +91,21 @@ Z_i = 10^{\mathrm{dBZ}_i/10}
 
 Aqui, `Z_i` representa o fator de refletividade linear (em mm⁶/m³), `N` é a quantidade de pixels e `dBZ_medio` é o resultado convertido novamente para a escala logarítmica, usando a referência convencional de 1 mm⁶/m³. **Essas três equações descrevem uma alternativa fisicamente adequada para a média, mas não são o cálculo atualmente implementado na função.**
 
-Para distância entre centros geográficos, o código usa a fórmula de Haversine. Para evitar erros de macros no renderizador do GitHub, as duas expressões estão em notação matemática simples, sem comandos LaTeX especiais:
+Para distância entre centros geográficos, o código usa a fórmula de Haversine, apresentada em duas etapas. Os blocos abaixo usam LaTeX básico, compatível com a sintaxe matemática do GitHub.
 
 **Etapa 1 — calcular o parâmetro a:**
 
-```text
-a = sin²(Δφ / 2) + cos(φ₁) × cos(φ₂) × sin²(Δλ / 2)
+```math
+a = \sin^{2}\left(\frac{\Delta\varphi}{2}\right) + \cos(\varphi_{1})\cos(\varphi_{2})\sin^{2}\left(\frac{\Delta\lambda}{2}\right)
 ```
 
 **Etapa 2 — calcular a distância:**
 
-```text
-d = 2 × R × atan2(√a, √(1 − a))
+```math
+d = 2R\arcsin\left(\sqrt{a}\right)
 ```
 
-Onde `Δφ = φ₂ − φ₁`, `Δλ = λ₂ − λ₁`, `R = 6371 km` e os ângulos são expressos em radianos. No código JavaScript/TypeScript, a segunda etapa utiliza `Math.atan2(Math.sqrt(a), Math.sqrt(1-a))`. Para `a = 1`, a distância é `π × R`.
+Onde `Δφ = φ₂ − φ₁`, `Δλ = λ₂ − λ₁`, `R = 6371 km` e os ângulos são expressos em radianos. A segunda equação é matematicamente equivalente à implementação com `Math.atan2(Math.sqrt(a), Math.sqrt(1-a))` para `0 ≤ a ≤ 1`, com o arredondamento numérico adequado.
 
 Nas equações, `φ` e `λ` representam latitude e longitude em radianos. A configuração usa distância de união de **20 km**, velocidade física máxima de **180 km/h** e horizontes de previsão de **15, 30, 45 e 60 minutos**. A extrapolação de posição pode ser expressa genericamente como:
 
