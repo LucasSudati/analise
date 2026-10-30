@@ -60,12 +60,16 @@ A função estima refletividade a partir das **cores de uma imagem PNG**, não d
 Exemplos presentes na classificação: faixas aproximadas de 30–45, 45–55, 55–65 e 65–75 dBZ, conforme a cor. Os limiares operacionais de segmentação são:
 
 ```math
-\mathrm{c\acute{e}lula}:\ \widehat Z\geq30\ \mathrm{dBZ},\ N_{px}\geq3;
-\qquad
-\mathrm{n\acute{u}cleo}:\ \widehat Z\geq50\ \mathrm{dBZ},\ N_{px}\geq2.
+\widehat{Z} \geq 30\ \mathrm{dBZ},\quad N_{\mathrm{pixels}} \geq 3
 ```
 
-A média de refletividade estimada dos pixels de uma região é:
+Para os núcleos convectivos:
+
+```math
+\widehat{Z} \geq 50\ \mathrm{dBZ},\quad N_{\mathrm{pixels}} \geq 2
+```
+
+A média aritmética dos valores estimados de refletividade em dBZ, conforme o código, é:
 
 ```math
 \overline{Z}_{\mathrm{dBZ}}=\frac{1}{N}\sum_{i=1}^{N}\widehat Z_i.
@@ -85,23 +89,21 @@ Z_i = 10^{\mathrm{dBZ}_i/10}
 \mathrm{dBZ}_{\mathrm{medio}} = 10\log_{10}(\overline{Z})
 ```
 
-Aqui, `Z_i` representa a refletividade linear (em mm⁶/m³), `N` é a quantidade de pixels e `dBZ_medio` é o resultado convertido novamente para a escala logarítmica. **Essas três equações descrevem uma alternativa fisicamente adequada para a média, mas não são o cálculo atualmente implementado na função.**
+Aqui, `Z_i` representa o fator de refletividade linear (em mm⁶/m³), `N` é a quantidade de pixels e `dBZ_medio` é o resultado convertido novamente para a escala logarítmica, usando a referência convencional de 1 mm⁶/m³. **Essas três equações descrevem uma alternativa fisicamente adequada para a média, mas não são o cálculo atualmente implementado na função.**
 
-Para distância entre centros geográficos, o código usa a fórmula de Haversine:
-
-A distância é calculada em duas etapas (ângulos em radianos):
+Para distância entre centros geográficos, o código usa a fórmula de Haversine. A distância é calculada em duas etapas (ângulos em radianos):
 
 ```math
 a = \sin^2\left(\frac{\Delta\varphi}{2}\right) + \cos(\varphi_1)\cos(\varphi_2)\sin^2\left(\frac{\Delta\lambda}{2}\right)
 ```
 
 ```math
-d = 2R\arctan\left(\frac{\sqrt{a}}{\sqrt{1-a}}\right)
+d = 2R\,\operatorname{atan2}\left(\sqrt{a},\sqrt{1-a}\right)
 ```
 
-Para o caso limite `a = 1`, a distância é `d = πR`. A forma implementada no código é `2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))`, que trata corretamente esse limite. Usa-se `R = 6371 km`.
+Para o caso limite `a = 1`, a distância é `d = πR`. A implementação usa `Math.atan2`, que trata corretamente esse limite. Usa-se `R = 6371 km`. Se o GitHub não renderizar `\\operatorname{atan2}`, a expressão equivalente para `0 < a < 1` é `2R * arctan(sqrt(a)/sqrt(1-a))`.
 
-`\varphi` e `\lambda` são latitude e longitude em radianos. A configuração usa distância de união de **20 km**, velocidade física máxima de **180 km/h** e horizontes de previsão de **15, 30, 45 e 60 minutos**. A extrapolação de posição pode ser expressa genericamente como:
+Nas equações, `φ` e `λ` representam latitude e longitude em radianos. A configuração usa distância de união de **20 km**, velocidade física máxima de **180 km/h** e horizontes de previsão de **15, 30, 45 e 60 minutos**. A extrapolação de posição pode ser expressa genericamente como:
 
 ```math
 \widehat{\mathbf p}(t+\Delta t)=\mathbf p(t)+\widehat{\mathbf v}\,\Delta t,
@@ -114,13 +116,13 @@ mas esta última é uma **representação conceitual** do nowcast, não a transc
 A função lê arquivos `GLM-L2-LCFA` e processa coordenadas e tempos dos flashes. O índice de dia do ano usado para construir os caminhos dos arquivos é:
 
 ```math
-\mathrm{DOY}=\left\lfloor\frac{t_{UTC}-t_{\mathrm{in\acute{i}cio\ do\ ano}}}{86400000\ \mathrm{ms}}\right\rfloor.
+\mathrm{DOY}=1+\left\lfloor\frac{t_{\mathrm{UTC}}-t_{\mathrm{Jan1,00:00UTC}}}{86400000\ \mathrm{ms}}\right\rfloor
 ```
 
-A idade de uma detecção, quando comparada ao relógio atual, é:
+Para interpretar a idade de uma detecção no aplicativo, em segundos, usa-se:
 
 ```math
-\Delta t_{\mathrm{flash}}=\frac{t_{\mathrm{agora}}-t_{\mathrm{flash}}}{1000}\ \mathrm{s}.
+\Delta t_{\mathrm{flash}}=\frac{t_{\mathrm{agora}}-t_{\mathrm{flash}}}{1000}
 ```
 
 O arquivo GLM descreve **detecções ópticas**; a quantidade de flashes não deve ser interpretada automaticamente como número de descargas nuvem-solo, nem como prova isolada de granizo.
@@ -167,7 +169,7 @@ Aqui `w_i` é o peso da fonte, `L_i` seu nível (0 a 3), e `n` o número de evid
 ### Status e atualização do projeto
 
 - **Situação:** Em revisão técnica; métodos meteorológicos ainda exigem validação.
-- **Última revisão desta nota:** 29/10/2026.
+- **Última revisão desta nota:** 30/10/2026.
 - **Última alteração do código:** não verificada nesta revisão; consulte o histórico de commits para a data exata.
 
 > Esta nota registra a revisão da documentação, não certifica testes nem uma versão estável.
