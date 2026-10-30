@@ -89,10 +89,17 @@ Aqui, `Z_i` representa a refletividade linear (em mm⁶/m³), `N` é a quantidad
 
 Para distância entre centros geográficos, o código usa a fórmula de Haversine:
 
+A distância é calculada em duas etapas (ângulos em radianos):
+
 ```math
-a=\sin^2\!\left(\frac{\Delta\varphi}{2}\right)+\cos\varphi_1\cos\varphi_2\sin^2\!\left(\frac{\Delta\lambda}{2}\right),
-\qquad d=2R\operatorname{atan2}(\sqrt a,\sqrt{1-a}),\ R=6371\ \mathrm{km}.
+a = \sin^2\left(\frac{\Delta\varphi}{2}\right) + \cos(\varphi_1)\cos(\varphi_2)\sin^2\left(\frac{\Delta\lambda}{2}\right)
 ```
+
+```math
+d = 2R\arctan\left(\frac{\sqrt{a}}{\sqrt{1-a}}\right)
+```
+
+Para o caso limite `a = 1`, a distância é `d = πR`. A forma implementada no código é `2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))`, que trata corretamente esse limite. Usa-se `R = 6371 km`.
 
 `\varphi` e `\lambda` são latitude e longitude em radianos. A configuração usa distância de união de **20 km**, velocidade física máxima de **180 km/h** e horizontes de previsão de **15, 30, 45 e 60 minutos**. A extrapolação de posição pode ser expressa genericamente como:
 
