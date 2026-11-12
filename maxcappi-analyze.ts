@@ -14,6 +14,7 @@
 
 
 import { decode } from "https://deno.land/x/pngs@0.1.1/mod.ts";
+import { vectorizeMaxcappi } from "./maxcappi-vectorize.ts";
 
 const FUNCTIONS = "https://whdymuqmzuwmrsqaqywd.supabase.co/functions/v1";
 const RADAR_URL = `${FUNCTIONS}/radar`;
@@ -885,8 +886,13 @@ function extractCores(
 // Quero verificar se a redução/compactação mantém informação suficiente para análise de células e se não apaga
 // máximos locais, gradientes ou estruturas pequenas relevantes para tempo severo.
 
-function scanRadarCompact(decoded: DecodedRadar) {
+function scanRadarCompact(decoded: DecodedRadar, vectorOptions?: { tolerancePx: number }) {
   const compact = buildCompactGrid(decoded);
+  // Os contornos reutilizam a mesma classificação da análise das células.
+  const vector = vectorOptions ? vectorizeMaxcappi(
+    compact.klass, decoded.width, decoded.height, decoded.radar.bounds,
+    decoded.radar.area, { tolerancePx: vectorOptions.tolerancePx },
+  ) : null;
   const extracted = extractCells(decoded, compact);
   const coresByCell = extractCores(
     decoded,
@@ -939,6 +945,7 @@ function scanRadarCompact(decoded: DecodedRadar) {
   return {
     ...compact.statistics,
     raw_components: extracted.rawComponents,
+    vector,
     cells: cells.length,
     detected_cores: cells.reduce((sum, cell) => sum + cell.core_count, 0),
     cells_with_cores: cells.filter((cell) => cell.core_count > 0).length,
@@ -2123,6 +2130,10 @@ export default {
       const radius = Math.max(0, Math.min(10, Number.isFinite(radiusRaw) ? Math.floor(radiusRaw) : 3));
 
       const area = (url.searchParams.get("area") ?? "").trim().toLowerCase();
+      // Retorno vetorial experimental somente quando solicitado; não grava imagens.
+      const vectorEnabled = url.searchParams.get("vector") === "1";
+      const toleranceRaw = Number(url.searchParams.get("vector_tolerance") ?? "0");
+      const vectorTolerance = Number.isFinite(toleranceRaw) ? Math.max(0, Math.min(1, toleranceRaw)) : 0;
       const limitRaw = Number(url.searchParams.get("limit") ?? "0");
       const limit = Number.isFinite(limitRaw) ? Math.max(0, Math.min(50, Math.floor(limitRaw))) : 0;
 
@@ -2187,7 +2198,7 @@ export default {
         const radarStarted = Date.now();
         try {
           const decoded = await decodeRadar(radar);
-          const scan = scanRadarCompact(decoded);
+          const scan = scanRadarCompact(decoded, vectorEnabled ? { tolerancePx: vectorTolerance } : undefined);
 
           radarResults.push({
             ok: true,
@@ -2209,6 +2220,7 @@ export default {
             cells_with_cores: scan.cells_with_cores,
             cells_with_magenta: scan.cells_with_magenta,
             cells: scan.detected_cells,
+            ...(vectorEnabled ? { vector: scan.vector } : {}),
           });
 
           allRadarCells.push(...scan.detected_cells);
@@ -2288,10 +2300,17 @@ export default {
       return json({
         ok: true,
         engine: "MONI MAXCAPPI Analyzer",
-        version: "5.4.0",
+        version: "5.4.0-vector-experimental",
         generated: new Date().toISOString(),
         processing_ms: Date.now() - started,
         mode: "scan",
+        vectorization: {
+          enabled: vectorEnabled,
+          source: "PNG classified palette",
+          lossless_geometry: vectorEnabled && vectorTolerance === 0,
+          tolerance_px: vectorTolerance,
+          note: "Polígonos são dados adicionais opcionais; não substituem PNG nem o estado do tracking. Bounds geográficos são aproximados.",
+        },
         optimization: "compact-typed-arrays-sequential-radars-spatial-gated-quality-tracking-multihorizon-validation",
         radar_images: totalRadarImages,
         processed_radar_images: images.length,
